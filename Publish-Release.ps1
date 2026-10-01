@@ -74,6 +74,7 @@ $consoleEncoding = [Console]::OutputEncoding
 [Console]::OutputEncoding = New-Object Text.UTF8Encoding $false
 try {
     $extraFile = $null
+    $published = $null
     if ($FromTag) {
         Step "Downloading $FromTag from $SourceRepo"
         & gh release download $FromTag -R $SourceRepo -p $spec.Pattern -D $work
@@ -88,13 +89,22 @@ try {
         }
         if (-not $Version) { $Version = $FromTag -replace '^(windows-|mac-|macos-)?v', '' }
         if (-not $PSBoundParameters.ContainsKey('Notes')) {
-            $Notes = & gh release view $FromTag -R $SourceRepo --json body -q .body
+            # Native output arrives as an array of lines; keep them as lines.
+            $Notes = (& gh release view $FromTag -R $SourceRepo --json body -q .body) -join "`n"
         }
+        # The page says when a build came out, not when it was promoted here.
+        $published = & gh release view $FromTag -R $SourceRepo --json publishedAt -q .publishedAt
     }
     else {
         if (-not (Test-Path -LiteralPath $File -PathType Leaf)) { throw "No such file: $File" }
         $File = (Resolve-Path -LiteralPath $File).Path
         if (-not $Version -and ((Split-Path -Leaf $File) -match 'v?(\d+\.\d+(\.\d+)?(-[0-9A-Za-z.\-]+)?)\.(exe|dmg)$')) { $Version = $Matches[1] }
+    }
+
+    # Invariant culture: on a Danish system ':' in a format string becomes '.',
+    # which no browser parses as a time.
+    if (-not $published) {
+        $published = [DateTime]::UtcNow.ToString("yyyy-MM-dd'T'HH':'mm':'ss'Z'", [Globalization.CultureInfo]::InvariantCulture)
     }
 
     if (-not $Version) { throw 'Could not tell the version from the tag or file name. Pass -Version.' }
@@ -160,7 +170,7 @@ try {
         bytes       = $item.Length
         file        = $name
         tag         = $tag
-        publishedAt = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        publishedAt = $published
         notes       = $Notes
     }
     $json = ($manifest | ConvertTo-Json -Depth 3) + "`n"
