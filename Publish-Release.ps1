@@ -68,6 +68,10 @@ if (& git -C $root status --porcelain -- $spec.Manifest) { throw "$($spec.Manife
 
 $work = Join-Path ([IO.Path]::GetTempPath()) "whisperly-publish-$([guid]::NewGuid().ToString('n').Substring(0, 8))"
 New-Item -ItemType Directory -Path $work | Out-Null
+# gh writes UTF-8. PowerShell decodes it with the console's code page unless
+# told otherwise, which turns the å in Danish release notes into garbage.
+$consoleEncoding = [Console]::OutputEncoding
+[Console]::OutputEncoding = New-Object Text.UTF8Encoding $false
 try {
     $extraFile = $null
     if ($FromTag) {
@@ -214,5 +218,6 @@ try {
     Write-Host "Release   https://github.com/$repo/releases/tag/$tag"
 }
 finally {
+    [Console]::OutputEncoding = $consoleEncoding
     Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
 }
