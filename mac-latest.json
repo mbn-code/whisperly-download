@@ -1,0 +1,10 @@
+{
+  "version": "1.0.1",
+  "url": "https://github.com/mbn-code/whisperly-download/releases/download/v1.0.1/Whisperly.dmg",
+  "sha256": "c543079884349db956b5619200a3952d73eb3c4fd680b4b8b3a28750002f6340",
+  "bytes": 2007609,
+  "file": "Whisperly.dmg",
+  "tag": "v1.0.1",
+  "publishedAt": "2026-10-01T23.35.00Z",
+  "notes": "The first stable Mac release, now packaged as a disk image: open it and drag Whisperly into Applications.\n\n### In 1.0\n\n- **A warm engine.** whisper-server keeps the model in memory between dictations. If it ever fails, dictation falls back to whisper-cli.\n- **Transcribe File…** from the menu bar, or drop a recording on the icon: wav, mp3, m4a, aac, flac, aiff and caf.\n- **History picker** on ⌃⌥⌘⇧V. Type to filter past dictations; Enter pastes one at your cursor.\n- **Recent transcripts** in the menu bar, one click to copy.\n- **Esc cancels** while recording or transcribing.\n- **Models are checked** against their SHA-256 before use.\n- **A command line** inside the app: `transcribe`, `history` and `diagnostic`."
+}
