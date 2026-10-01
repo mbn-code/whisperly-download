@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A Pro license
+    url: https://mbn-code.github.io/whisperly-download/#pro
+    about: Licenses are issued by email; the Pro page has the address.
+  - name: A security problem
+    url: https://github.com/mbn-code/whisperly-download/security/advisories/new
+    about: Report it privately, not as a public issue.

@@ -1,0 +1,1761 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Whisperly</title>
+    <meta
+      name="description"
+      content="Hold a key, speak, let go: Whisperly types what you said at your cursor. Local speech-to-text for Windows and Mac, built on whisper.cpp. No account, no cloud."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0f1115"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link
+      rel="canonical"
+      href="https://mbn-code.github.io/whisperly-download/"
+    />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png" />
+    <link rel="apple-touch-icon" href="assets/icon-180.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Whisperly" />
+    <meta property="og:title" content="Whisperly" />
+    <meta
+      property="og:description"
+      content="Hold a key, speak, let go. Local dictation for Windows and Mac."
+    />
+    <meta
+      property="og:url"
+      content="https://mbn-code.github.io/whisperly-download/"
+    />
+    <meta
+      property="og:image"
+      content="https://mbn-code.github.io/whisperly-download/assets/card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The Whisperly icon above a recording capsule with a live waveform and a timer."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #16181d;
+        --muted: #6a7078;
+        --line: #e3e5e9;
+        --accent: #1f6feb;
+        --accent-fg: #ffffff;
+        --code-bg: #f5f6f8;
+        --pill-bg: rgba(255, 255, 255, 0.88);
+        --pill-shadow: 0 14px 40px rgba(20, 34, 60, 0.13);
+        --stage-glow: rgba(31, 111, 235, 0.09);
+        --capsule-bg: #ffffff;
+        --capsule-line: #e6e8ec;
+        --capsule-shadow:
+          0 12px 32px rgba(40, 52, 90, 0.14), 0 2px 6px rgba(40, 52, 90, 0.06);
+        --mic: #d63b3b;
+        --ok: #1a7f37;
+        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+        --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1115;
+          --fg: #e6e8ec;
+          --muted: #949aa4;
+          --line: #23262d;
+          --accent: #4c8dff;
+          --accent-fg: #0f1115;
+          --code-bg: #171a20;
+          --pill-bg: rgba(23, 26, 32, 0.88);
+          --pill-shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
+          --stage-glow: rgba(76, 141, 255, 0.12);
+          --capsule-bg: #20242c;
+          --capsule-line: #2c313a;
+          --capsule-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+          --mic: #f0605d;
+          --ok: #3fb950;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        /* Keeps a focused or linked element clear of the sticky tab bar. */
+        scroll-padding-top: 88px;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.6 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI Variable Text",
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 54px 24px 96px;
+      }
+      .tab-nav {
+        position: sticky;
+        top: 16px;
+        z-index: 5;
+        display: flex;
+        gap: 4px;
+        width: max-content;
+        max-width: calc(100% - 32px);
+        margin: 24px auto 0;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--pill-bg);
+        box-shadow: var(--pill-shadow);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+      .tab-nav button {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          transform 160ms var(--ease-out),
+          background-color 150ms ease,
+          color 150ms ease;
+      }
+      .tab-nav button,
+      .tab-pill span {
+        border-radius: 999px;
+        padding: 9px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .tab-nav button[aria-selected="true"] {
+        background: var(--fg);
+        color: var(--bg);
+      }
+      /*
+        With the script running, the selected tab is drawn by .tab-pill: a copy
+        of the labels in the selected colours, clipped to the selected tab. The
+        clip slides between tabs, so the background and the text colour change
+        in step instead of as two separate fades.
+      */
+      .tab-nav.has-pill button[aria-selected="true"] {
+        background: transparent;
+        color: var(--muted);
+      }
+      .tab-pill {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        gap: inherit;
+        padding: inherit;
+        border-radius: inherit;
+        background: var(--fg);
+        color: var(--bg);
+        pointer-events: none;
+        transition: clip-path 250ms var(--ease-out);
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .tab-nav button:hover:not([aria-selected="true"]) {
+          color: var(--fg);
+          background: var(--code-bg);
+        }
+      }
+      .tab-nav button:active {
+        transform: scale(0.97);
+      }
+      :focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .app-icon {
+        display: block;
+        width: 56px;
+        height: 56px;
+        margin: 0 0 18px -4px;
+      }
+      h1 {
+        font-size: 30px;
+        line-height: 1.2;
+        margin: 0 0 8px;
+        letter-spacing: -0.02em;
+        text-wrap: balance;
+      }
+      h2,
+      .tool-card h3 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--muted);
+        font-weight: 600;
+        margin: 48px 0 16px;
+      }
+      p {
+        margin: 0 0 16px;
+      }
+      p,
+      li,
+      dd {
+        text-wrap: pretty;
+      }
+      .lede {
+        color: var(--muted);
+        margin-bottom: 32px;
+      }
+      a {
+        color: var(--accent);
+        text-underline-offset: 0.15em;
+      }
+
+      /* The capsule, as the app draws it: listening, transcribing, done. */
+      .stage {
+        position: relative;
+        display: grid;
+        place-items: center;
+        gap: 18px;
+        margin: 0 0 32px;
+        padding: 52px 12px 30px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background:
+          radial-gradient(
+            60% 75% at 50% 55%,
+            var(--stage-glow),
+            transparent 72%
+          ),
+          var(--code-bg);
+        overflow: hidden;
+      }
+      .capsule {
+        position: relative;
+        height: 56px;
+        width: 330px;
+        max-width: 100%;
+        border: 1px solid var(--capsule-line);
+        border-radius: 999px;
+        background: var(--capsule-bg);
+        box-shadow: var(--capsule-shadow);
+        /* While the width morphs, the pill's edge clips what is inside it. */
+        overflow: hidden;
+        transition: width 460ms var(--ease-in-out);
+      }
+      .cap-layer {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: max-content;
+        /* The room the stage has on a phone, not the capsule's current width:
+           the capsule is sized from this layer, so it cannot be the limit. */
+        max-width: calc(100vw - 64px);
+        height: 100%;
+        padding: 0 22px;
+        font-size: 15px;
+        white-space: nowrap;
+        transform: translateX(-50%);
+        opacity: 0;
+        filter: blur(3px);
+        transition:
+          opacity 200ms ease,
+          filter 200ms ease;
+      }
+      .cap-layer.is-on {
+        opacity: 1;
+        filter: none;
+        /* The outgoing state leaves at once; the new one arrives as the pill
+           reaches its width rather than ahead of it. */
+        transition-delay: 120ms;
+      }
+      .cap-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cap-layer svg {
+        flex: none;
+      }
+      .mic {
+        color: var(--mic);
+      }
+      .trace {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 30px;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 35%);
+        mask-image: linear-gradient(90deg, transparent, #000 35%);
+      }
+      .trace i {
+        width: 3px;
+        height: 100%;
+        border-radius: 2px;
+        background: var(--fg);
+        opacity: 0.78;
+        transform: scaleY(0.12);
+        transition: transform 90ms linear;
+      }
+      .timer {
+        min-width: 3.2ch;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--line);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 700ms linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .check {
+        color: var(--ok);
+      }
+      .stage-caption {
+        min-height: 1.6em;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        text-align: center;
+        transition: opacity 180ms ease;
+      }
+      .stage-caption.is-swapping {
+        opacity: 0;
+      }
+
+      .download {
+        display: inline-block;
+        padding: 12px 22px;
+        border-radius: 7px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-weight: 600;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          transform 160ms var(--ease-out),
+          filter 150ms ease;
+      }
+      @media (hover: hover) and (pointer: fine) {
+        .download:hover {
+          filter: brightness(1.08);
+        }
+      }
+      .download:active {
+        transform: scale(0.97);
+      }
+      .release {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+      .release span {
+        white-space: nowrap;
+      }
+      .release span + span::before {
+        content: "·";
+        content: "·" / "";
+        margin: 0 8px;
+      }
+      .release time {
+        cursor: help;
+      }
+
+      dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px 20px;
+      }
+      dt {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      dd {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      ol {
+        margin: 0;
+        padding-left: 20px;
+      }
+      li {
+        margin-bottom: 10px;
+      }
+      li::marker {
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      code,
+      kbd,
+      .hash {
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 13px;
+        background: var(--code-bg);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      code,
+      kbd {
+        /* Long paths wrap instead of pushing the page sideways on a phone. */
+        overflow-wrap: anywhere;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+      }
+      .hash {
+        display: block;
+        padding: 10px 12px;
+        word-break: break-all;
+        line-height: 1.5;
+        /* One click selects the whole checksum for copying. */
+        -webkit-user-select: all;
+        user-select: all;
+      }
+
+      .notes {
+        border-left: 2px solid var(--line);
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 14px;
+        /* Hashes and file names in the notes wrap instead of widening the page. */
+        overflow-wrap: anywhere;
+      }
+      .notes pre {
+        margin: 0 0 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: var(--code-bg);
+        white-space: pre-wrap;
+      }
+      .notes pre code {
+        padding: 0;
+      }
+      .notes p,
+      .notes ul {
+        margin: 0 0 10px;
+      }
+      .notes ul {
+        padding-left: 18px;
+      }
+      .notes li {
+        margin-bottom: 6px;
+      }
+      .notes h3 {
+        margin: 18px 0 8px;
+        color: var(--fg);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .notes h3:first-child {
+        margin-top: 0;
+      }
+      .notes strong {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .tool-card {
+        margin: 32px 0;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--code-bg);
+      }
+      .tool-card h2,
+      .tool-card h3 {
+        margin-top: 0;
+      }
+      .tool-card p:last-child {
+        margin-bottom: 0;
+      }
+      .tool-card code,
+      .tool-card kbd {
+        background: var(--bg);
+      }
+      .tool-card .download + .small {
+        margin-top: 14px;
+      }
+      .shot-link {
+        display: block;
+        margin: 0 0 28px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--code-bg);
+        cursor: zoom-in;
+      }
+      .shot {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 11px;
+        transition: opacity 200ms var(--ease-out);
+      }
+      .shot.is-loading {
+        opacity: 0;
+      }
+      .small {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      footer p {
+        margin: 0 0 6px;
+      }
+      @media (max-width: 520px) {
+        main {
+          padding: 40px 20px 72px;
+        }
+        .tab-nav button,
+        .tab-pill span {
+          padding: 8px 14px;
+          font-size: 13px;
+        }
+        .tool-card {
+          padding: 20px;
+        }
+        .stage {
+          padding: 40px 8px 22px;
+        }
+        .cap-layer {
+          padding: 0 18px;
+          font-size: 14px;
+          gap: 10px;
+        }
+        dl {
+          grid-template-columns: 1fr;
+          gap: 2px 0;
+        }
+        dd {
+          margin-bottom: 12px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .tab-pill,
+        .capsule {
+          transition: none;
+        }
+        .tab-nav button:active,
+        .download:active {
+          transform: none;
+        }
+      }
+    </style>
+    <noscript>
+      <style>
+        /* Without the script the tabs cannot switch, so every panel is shown in turn. */
+        .tab-nav,
+        .release,
+        .build-details {
+          display: none;
+        }
+        [role="tabpanel"][hidden] {
+          display: block !important;
+        }
+        [role="tabpanel"] + [role="tabpanel"] {
+          margin-top: 96px;
+        }
+      </style>
+    </noscript>
+  </head>
+  <body>
+    <nav class="tab-nav" role="tablist" aria-label="Whisperly">
+      <button
+        id="tab-windows"
+        type="button"
+        role="tab"
+        aria-controls="panel-windows"
+        aria-selected="true"
+        tabindex="0"
+      >
+        Windows
+      </button>
+      <button
+        id="tab-mac"
+        type="button"
+        role="tab"
+        aria-controls="panel-mac"
+        aria-selected="false"
+        tabindex="-1"
+      >
+        Mac
+      </button>
+      <button
+        id="tab-pro"
+        type="button"
+        role="tab"
+        aria-controls="panel-pro"
+        aria-selected="false"
+        tabindex="-1"
+      >
+        Pro
+      </button>
+    </nav>
+    <main>
+      <section id="panel-windows" role="tabpanel" aria-labelledby="tab-windows">
+        <img
+          class="app-icon"
+          src="assets/icon-180.png"
+          width="56"
+          height="56"
+          alt=""
+        />
+        <h1>Whisperly for Windows</h1>
+        <p class="lede">
+          Hold a key, say what you mean, let go: the words appear wherever your
+          cursor is. Speech becomes text on your own PC, through whisper.cpp. No
+          account, no cloud, no telemetry.
+        </p>
+
+        <figure
+          class="stage"
+          data-key="Right Ctrl"
+          data-device="PC"
+          data-extra="Vi ses i morgen klokken ti."
+        >
+          <div class="capsule" aria-hidden="true">
+            <div class="cap-layer" data-state="listen">
+              <svg
+                class="mic"
+                width="16"
+                height="20"
+                viewBox="0 0 16 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <rect
+                  x="4.5"
+                  y="1"
+                  width="7"
+                  height="11"
+                  rx="3.5"
+                  fill="currentColor"
+                  stroke="none"
+                />
+                <path d="M1.5 9a6.5 6.5 0 0 0 13 0M8 15.5V19" />
+              </svg>
+              <span class="trace"></span>
+              <span class="timer">0.0s</span>
+            </div>
+            <div class="cap-layer" data-state="work">
+              <span class="spinner"></span>
+              <span class="cap-text">Transcribing</span>
+            </div>
+            <div class="cap-layer is-on" data-state="done">
+              <svg
+                class="check"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9.5l4 4L15 5" />
+              </svg>
+              <span class="cap-text">Meeting moved to Thursday at ten.</span>
+            </div>
+          </div>
+          <figcaption class="stage-caption">
+            Hold Right Ctrl, speak, let go. The text lands at your cursor.
+          </figcaption>
+        </figure>
+
+        <a
+          class="download"
+          id="win-download"
+          href="https://github.com/mbn-code/whisperly-download/releases"
+          aria-describedby="win-release"
+          >Download for Windows</a
+        >
+        <div class="release" id="win-release" aria-live="polite">
+          <span>Checking for the latest build…</span>
+        </div>
+
+        <h2>Install</h2>
+        <ol>
+          <li>
+            Open the installer. It is not code-signed yet, so SmartScreen says
+            <strong>Windows protected your PC</strong>: choose
+            <strong>More info</strong>, then <strong>Run anyway</strong>.
+          </li>
+          <li>
+            It installs for your account only, into
+            <code>%LOCALAPPDATA%\Programs\Whisperly</code>, with no
+            administrator prompt. Whisperly starts when you sign in unless you
+            untick that box.
+          </li>
+          <li>
+            The setup guide takes about a minute: pick your microphone and watch
+            the meter react, download a speech model, choose your key, and try
+            it once before you rely on it.
+          </li>
+        </ol>
+        <p>
+          <strong>Updating:</strong> Whisperly checks once a day and tells you
+          when a new version is out. Run the new installer over the old one;
+          your settings and models stay where they are. Uninstall from Windows
+          Settings, under Apps, like any other app.
+        </p>
+
+        <h2>Using it</h2>
+        <dl>
+          <dt>Hold Right Ctrl</dt>
+          <dd>
+            Whisperly listens while the key is down; the capsule shows a live
+            trace and a timer. Any Ctrl, Alt, Shift or Windows key can be the
+            key instead.
+          </dd>
+          <dt>Let go</dt>
+          <dd>
+            The text is pasted at your cursor and your clipboard is put back.
+            Settings can copy it instead, or type it character by character.
+          </dd>
+          <dt>Esc</dt>
+          <dd>Cancels while recording or transcribing.</dd>
+          <dt>Ctrl+Alt+Shift+V</dt>
+          <dd>
+            Search what you have dictated and paste it again.
+            <a href="#pro">Pro</a>.
+          </dd>
+          <dt>Tray icon</dt>
+          <dd>
+            Settings, history, and Transcribe File… for wav, mp3, m4a, aac,
+            flac, aiff and wma recordings.
+          </dd>
+        </dl>
+
+        <h2>What it does</h2>
+        <a
+          class="shot-link"
+          href="assets/settings.png"
+          title="Open the full-size screenshot"
+        >
+          <picture>
+            <source type="image/webp" srcset="assets/settings.webp" />
+            <img
+              class="shot"
+              src="assets/settings.png"
+              width="940"
+              height="700"
+              loading="lazy"
+              decoding="async"
+              alt="Whisperly's settings, on the Home page: ready to dictate, Right Ctrl as the key, and a readiness check for the microphone, the local engine and the active model."
+            />
+          </picture>
+        </a>
+        <dl>
+          <dt>Models</dt>
+          <dd>
+            Seven whisper.cpp models, from Tiny (75 MB) to Large v3 Turbo (1.6
+            GB). Each downloads from Hugging Face and is checked against its
+            SHA-256 before use.
+          </dd>
+          <dt>Speed</dt>
+          <dd>
+            Runs on your graphics card through Vulkan, and on the processor when
+            there is no usable GPU. The model stays loaded between dictations.
+          </dd>
+          <dt>Languages</dt>
+          <dd>
+            100 languages and auto-detect with a multilingual model. Danish is
+            handled end to end: punctuation by voice, decimal commas and names.
+          </dd>
+          <dt>Dictionary</dt>
+          <dd>
+            Replace what you say with what you mean, and keep a list of names
+            and terms that should always be spelled your way.
+          </dd>
+          <dt>Voice commands</dt>
+          <dd>
+            Say “new line”, “period” or “open paren” and get the character.
+          </dd>
+          <dt>Prompt mode</dt>
+          <dd>
+            A second key that turns what you say into a cleaner prompt, shaped
+            by a local model through Ollama.
+          </dd>
+          <dt>History</dt>
+          <dd>
+            Your last 200 dictations, kept on this PC. Turn it off or clear it
+            in Settings.
+          </dd>
+        </dl>
+
+        <h2>Privacy</h2>
+        <p>
+          Your audio never leaves this PC, and there is no account or telemetry.
+          Whisperly goes online only for these:
+        </p>
+        <dl>
+          <dt>Update check</dt>
+          <dd>
+            Once a day, one small request for the newest version number. Turn it
+            off in Settings, under About.
+          </dd>
+          <dt>Models</dt>
+          <dd>Downloaded from Hugging Face when you choose one.</dd>
+          <dt>Engine</dt>
+          <dd>
+            If the bundled engine cannot start, you can install a processor-only
+            build from GitHub.
+          </dd>
+          <dt>Prompt mode</dt>
+          <dd>
+            Local by default. If you switch its provider to a cloud model, the
+            text you dictate in prompt mode is sent to that service, through
+            your own sign-in.
+          </dd>
+        </dl>
+
+        <h2>Requirements</h2>
+        <dl>
+          <dt>Windows</dt>
+          <dd>10 or 11, 64-bit</dd>
+          <dt>Disk</dt>
+          <dd>About 225 MB installed, plus 75 MB to 1.6 GB for each model</dd>
+          <dt>Graphics</dt>
+          <dd>Optional. A Vulkan-capable GPU makes transcription faster.</dd>
+          <dt>Microphone</dt>
+          <dd>
+            Any input Windows can use. Whisperly follows your default device
+            unless you pick one.
+          </dd>
+        </dl>
+
+        <div class="build-details">
+          <h2>This build</h2>
+          <div class="notes" id="win-notes" aria-busy="true">
+            <p>Loading release notes…</p>
+          </div>
+
+          <h2>Checksum</h2>
+          <p>
+            Verify the download in PowerShell with
+            <code
+              >Get-FileHash
+              <span class="win-file">WhisperlySetup.exe</span> -Algorithm
+              SHA256</code
+            >. The hash it prints must match this one.
+          </p>
+          <code class="hash" id="win-hash">—</code>
+          <p class="small" style="margin-top: 14px">
+            A portable zip and every earlier version are on the
+            <a href="https://github.com/mbn-code/whisperly-download/releases"
+              >releases page</a
+            >.
+          </p>
+        </div>
+
+        <footer>
+          <p>
+            Builds are published from
+            <a href="https://github.com/mbn-code/whisperly-download"
+              >mbn-code/whisperly-download</a
+            >. The source code is private.
+          </p>
+          <p>
+            Something wrong?
+            <a
+              href="https://github.com/mbn-code/whisperly-download/issues/new/choose"
+              >Open an issue</a
+            >
+            or write to
+            <a href="mailto:malthe@mbn-code.dk">malthe@mbn-code.dk</a>.
+          </p>
+        </footer>
+      </section>
+
+      <section id="panel-mac" role="tabpanel" aria-labelledby="tab-mac" hidden>
+        <img
+          class="app-icon"
+          src="assets/icon-180.png"
+          width="56"
+          height="56"
+          alt=""
+        />
+        <h1>Whisperly for Mac</h1>
+        <p class="lede">
+          A menu-bar app with the same idea: hold Right ⌘, speak, let go, and
+          the text lands at your cursor. Transcription runs on your Mac through
+          whisper.cpp.
+        </p>
+
+        <figure class="stage" data-key="Right ⌘" data-device="Mac">
+          <div class="capsule" aria-hidden="true">
+            <div class="cap-layer" data-state="listen">
+              <svg
+                class="mic"
+                width="16"
+                height="20"
+                viewBox="0 0 16 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <rect
+                  x="4.5"
+                  y="1"
+                  width="7"
+                  height="11"
+                  rx="3.5"
+                  fill="currentColor"
+                  stroke="none"
+                />
+                <path d="M1.5 9a6.5 6.5 0 0 0 13 0M8 15.5V19" />
+              </svg>
+              <span class="trace"></span>
+              <span class="timer">0.0s</span>
+            </div>
+            <div class="cap-layer" data-state="work">
+              <span class="spinner"></span>
+              <span class="cap-text">Transcribing</span>
+            </div>
+            <div class="cap-layer is-on" data-state="done">
+              <svg
+                class="check"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9.5l4 4L15 5" />
+              </svg>
+              <span class="cap-text">Meeting moved to Thursday at ten.</span>
+            </div>
+          </div>
+          <figcaption class="stage-caption">
+            Hold Right ⌘, speak, let go. The text lands at your cursor.
+          </figcaption>
+        </figure>
+
+        <a
+          class="download"
+          id="mac-download"
+          href="https://github.com/mbn-code/whisperly-download/releases"
+          aria-describedby="mac-release"
+          >Download for Mac</a
+        >
+        <div class="release" id="mac-release" aria-live="polite">
+          <span>Checking for the latest build…</span>
+        </div>
+
+        <h2>Install</h2>
+        <ol>
+          <li>
+            Install the speech engine with
+            <a href="https://brew.sh">Homebrew</a>:
+            <code>brew install whisper-cpp</code>. The Mac app uses it rather
+            than bundling its own.
+          </li>
+          <li>
+            Open <code>Whisperly.dmg</code> and drag Whisperly into
+            Applications.
+          </li>
+          <li>
+            The app is not notarized yet, so macOS refuses the first launch.
+            After that first try, open System Settings, go to
+            <strong>Privacy &amp; Security</strong> and choose
+            <strong>Open Anyway</strong>. On macOS 14 you can instead
+            right-click Whisperly in Applications and choose
+            <strong>Open</strong>.
+          </li>
+          <li>
+            Setup asks for the microphone and Accessibility (to see your key and
+            paste), downloads a model and lets you choose your key.
+          </li>
+        </ol>
+
+        <h2>Using it</h2>
+        <dl>
+          <dt>Hold Right ⌘</dt>
+          <dd>
+            Records while the key is down. Right ⌥, Right ⌃, Right ⇧ or Fn can
+            be the key instead.
+          </dd>
+          <dt>Let go</dt>
+          <dd>
+            Transcribes and pastes at your cursor, or copies or types it, as you
+            choose in Settings.
+          </dd>
+          <dt>Esc</dt>
+          <dd>Cancels while recording or transcribing.</dd>
+          <dt>⌃⌥⌘⇧V</dt>
+          <dd>Search past dictations and paste one again.</dd>
+          <dt>Menu bar</dt>
+          <dd>
+            History, settings, and Transcribe File… — or drop a recording on the
+            icon.
+          </dd>
+        </dl>
+
+        <h2>Privacy</h2>
+        <p>
+          Your audio and text never leave your Mac, and there is no account or
+          telemetry. Whisperly goes online only to download the models you
+          choose from Hugging Face, and to check GitHub once a day for a newer
+          version.
+        </p>
+
+        <h2>Requirements</h2>
+        <dl>
+          <dt>macOS</dt>
+          <dd>14 Sonoma or later</dd>
+          <dt>Processor</dt>
+          <dd>Apple silicon</dd>
+          <dt>Engine</dt>
+          <dd><code>whisper-cpp</code> from Homebrew</dd>
+          <dt>Disk</dt>
+          <dd>2 MB for the app, plus 75 MB to 1.6 GB for each model</dd>
+          <dt>Languages</dt>
+          <dd>
+            English, and nine more with the multilingual Large v3 Turbo model
+          </dd>
+        </dl>
+
+        <div class="build-details">
+          <h2>This build</h2>
+          <div class="notes" id="mac-notes" aria-busy="true">
+            <p>Loading release notes…</p>
+          </div>
+
+          <h2>Checksum</h2>
+          <p>
+            Verify the download in Terminal with
+            <code
+              >shasum -a 256 <span class="mac-file">Whisperly.dmg</span></code
+            >. The hash it prints must match this one.
+          </p>
+          <code class="hash" id="mac-hash">—</code>
+        </div>
+
+        <footer>
+          <p>
+            Builds are published from
+            <a href="https://github.com/mbn-code/whisperly-download"
+              >mbn-code/whisperly-download</a
+            >. The source code is private.
+          </p>
+          <p>
+            Something wrong?
+            <a
+              href="https://github.com/mbn-code/whisperly-download/issues/new/choose"
+              >Open an issue</a
+            >
+            or write to
+            <a href="mailto:malthe@mbn-code.dk">malthe@mbn-code.dk</a>.
+          </p>
+        </footer>
+      </section>
+
+      <section id="panel-pro" role="tabpanel" aria-labelledby="tab-pro" hidden>
+        <img
+          class="app-icon"
+          src="assets/icon-180.png"
+          width="56"
+          height="56"
+          alt=""
+        />
+        <h1>Whisperly Pro</h1>
+        <p class="lede">
+          Whisperly is free to use. Pro is a one-time $29 license for the
+          largest models and the history picker. No subscription, no account.
+        </p>
+
+        <h2>What Pro adds</h2>
+        <dl>
+          <dt>Medium</dt>
+          <dd>The most accurate English-only model, about 1.5 GB.</dd>
+          <dt>Large v3 Turbo</dt>
+          <dd>
+            The most accurate model overall, about 1.6 GB, and the best choice
+            for any language other than English.
+          </dd>
+          <dt>History picker</dt>
+          <dd>
+            Ctrl+Alt+Shift+V opens a search over everything you have dictated;
+            Enter pastes it again.
+          </dd>
+        </dl>
+        <p class="small" style="margin-top: 20px">
+          Everything else is free: the five other models, the dictionary, voice
+          commands, prompt mode, file transcription and history. The current Mac
+          build, 1.0.1, predates Pro, so everything in it is free.
+        </p>
+
+        <div class="tool-card">
+          <h3>Get a license</h3>
+          <p>
+            Licenses are issued by hand for now. Write and you get a key back by
+            email.
+          </p>
+          <a
+            class="download"
+            href="mailto:malthe@mbn-code.dk?subject=Whisperly%20Pro"
+            >Email for a license</a
+          >
+          <p class="small">malthe@mbn-code.dk</p>
+        </div>
+
+        <h2>Activate</h2>
+        <ol>
+          <li>Open Whisperly's Settings and go to <strong>About</strong>.</li>
+          <li>
+            Paste your key — it starts with <code>WHSP1.</code> — and choose
+            <strong>Activate</strong>.
+          </li>
+        </ol>
+        <p>
+          The key is checked on your computer; nothing is sent anywhere to
+          activate it, and it is not tied to one machine. A model you already
+          downloaded keeps working even without Pro.
+        </p>
+
+        <footer>
+          <p>
+            Builds are published from
+            <a href="https://github.com/mbn-code/whisperly-download"
+              >mbn-code/whisperly-download</a
+            >. The source code is private.
+          </p>
+          <p>
+            Questions about Pro? Write to
+            <a href="mailto:malthe@mbn-code.dk">malthe@mbn-code.dk</a>.
+          </p>
+        </footer>
+      </section>
+    </main>
+
+    <script>
+      // The page's one entrance curve, shared with the stylesheet.
+      var EASE_OUT =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--ease-out")
+          .trim() || "ease-out";
+      var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      function fadeIn(el) {
+        if (el.animate)
+          el.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: 200,
+            easing: EASE_OUT,
+          });
+      }
+
+      (function () {
+        var ids = ["windows", "mac", "pro"];
+        var tabs = ids.map(function (id) {
+          return document.getElementById("tab-" + id);
+        });
+        var panels = ids.map(function (id) {
+          return document.getElementById("panel-" + id);
+        });
+        var titles = [
+          "Whisperly for Windows",
+          "Whisperly for Mac",
+          "Whisperly Pro",
+        ];
+        var current = -1;
+        var nav = tabs[0].parentNode;
+
+        var pill = null;
+        if (window.CSS && CSS.supports("clip-path", "inset(0 round 1px)")) {
+          pill = document.createElement("div");
+          pill.className = "tab-pill";
+          pill.setAttribute("aria-hidden", "true");
+          tabs.forEach(function (tab) {
+            var label = document.createElement("span");
+            label.textContent = tab.textContent;
+            pill.appendChild(label);
+          });
+          nav.appendChild(pill);
+          nav.classList.add("has-pill");
+        }
+
+        // Clips the pill to the selected tab. A click slides it there; everything
+        // else (first paint, a keyboard switch, a resize) moves it at once. It
+        // measures its own copy of the label: the buttons scale while pressed, and
+        // offsetLeft/offsetWidth round to whole pixels.
+        function placePill(slide) {
+          if (!pill || current < 0) return;
+          var box = pill.getBoundingClientRect();
+          var label = pill.children[current].getBoundingClientRect();
+          if (!slide) pill.style.transition = "none";
+          pill.style.clipPath =
+            "inset(" +
+            (label.top - box.top) +
+            "px " +
+            (box.right - label.right) +
+            "px " +
+            (box.bottom - label.bottom) +
+            "px " +
+            (label.left - box.left) +
+            "px round 999px)";
+          if (!slide) {
+            pill.getBoundingClientRect(); // commit the jump before the transition returns
+            pill.style.transition = "";
+          }
+        }
+
+        // The new panel settles in from just below. Reduced motion keeps the fade
+        // and drops the movement.
+        function enter(panel) {
+          if (!panel.animate) return;
+          panel.animate(
+            reducedMotion.matches
+              ? [{ opacity: 0 }, { opacity: 1 }]
+              : [
+                  { opacity: 0, transform: "translateY(8px)" },
+                  { opacity: 1, transform: "none" },
+                ],
+            { duration: 200, easing: EASE_OUT },
+          );
+        }
+
+        // A visitor on a Mac lands on the Mac tab; everyone else on Windows.
+        function platformTab() {
+          var platform =
+            (navigator.userAgentData && navigator.userAgentData.platform) ||
+            navigator.platform ||
+            "";
+          return /mac/i.test(platform) &&
+            !/iphone|ipad/i.test(navigator.userAgent)
+            ? 1
+            : 0;
+        }
+
+        // #windows, #mac and #pro open their tab. The old site's #pricing opens Pro;
+        // anything else, such as its #download, picks the visitor's platform.
+        function fromHash() {
+          var hash = location.hash.replace(/^#/, "").toLowerCase();
+          if (hash === "pricing") return 2;
+          if (hash === "macos") return 1;
+          var index = ids.indexOf(hash);
+          return index >= 0 ? index : platformTab();
+        }
+
+        function activate(index, focus, updateUrl) {
+          var moved = index !== current;
+          var switched = current >= 0 && moved;
+          // Keyboard switches stay instant: arrow keys should never wait on motion.
+          var smooth = switched && !focus;
+          current = index;
+          tabs.forEach(function (tab, i) {
+            var selected = i === index;
+            tab.setAttribute("aria-selected", selected ? "true" : "false");
+            tab.tabIndex = selected ? 0 : -1;
+            panels[i].hidden = !selected;
+          });
+          if (moved) placePill(smooth);
+          if (smooth) enter(panels[index]);
+          document.title = titles[index];
+          if (focus) tabs[index].focus();
+          if (updateUrl) history.replaceState(null, "", "#" + ids[index]);
+          // A new panel starts at its top; keeping the old scroll offset would drop
+          // the reader into the middle of a page they have not seen.
+          if (switched && window.scrollY > 0) window.scrollTo(0, 0);
+        }
+
+        tabs.forEach(function (tab, index) {
+          tab.addEventListener("click", function () {
+            activate(index, false, true);
+          });
+          tab.addEventListener("keydown", function (event) {
+            var next =
+              event.key === "ArrowRight"
+                ? (index + 1) % tabs.length
+                : event.key === "ArrowLeft"
+                  ? (index + tabs.length - 1) % tabs.length
+                  : event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? tabs.length - 1
+                      : -1;
+            if (next < 0) return;
+            event.preventDefault();
+            activate(next, true, true);
+          });
+        });
+        window.addEventListener("hashchange", function () {
+          activate(fromHash(), false, false);
+        });
+        activate(fromHash(), false, false);
+        if (window.ResizeObserver)
+          new ResizeObserver(function () {
+            placePill(false);
+          }).observe(nav);
+      })();
+
+      // The lazy screenshot fades in when it arrives instead of popping in.
+      (function () {
+        var shot = document.querySelector(".shot");
+        if (!shot || shot.complete) return;
+        shot.classList.add("is-loading");
+        function shown() {
+          shot.classList.remove("is-loading");
+        }
+        shot.addEventListener("load", shown);
+        shot.addEventListener("error", shown);
+      })();
+
+      // The capsule demo: listening with a live trace and a timer, transcribing,
+      // then the text it typed, on a loop. It runs only while it is on screen.
+      // Without the script, or with reduced motion, it rests on the finished state.
+      function capsuleDemo(stage) {
+        var capsule = stage.querySelector(".capsule");
+        var layers = {};
+        Array.prototype.forEach.call(
+          stage.querySelectorAll(".cap-layer"),
+          function (layer) {
+            layers[layer.getAttribute("data-state")] = layer;
+          },
+        );
+        var caption = stage.querySelector(".stage-caption");
+        var trace = layers.listen.querySelector(".trace");
+        var timer = layers.listen.querySelector(".timer");
+        var doneText = layers.done.querySelector(".cap-text");
+        var key = stage.getAttribute("data-key");
+        var device = stage.getAttribute("data-device");
+        var lines = [
+          "Meeting moved to Thursday at ten.",
+          "Running late, start without me.",
+          "Thanks, that works for me.",
+          "Let's push the review to Monday.",
+        ];
+        if (stage.getAttribute("data-extra"))
+          lines.splice(2, 0, stage.getAttribute("data-extra"));
+        var captions = {
+          listen: "Hold " + key + " and speak.",
+          work: "Let go. It transcribes on this " + device + ".",
+          done: "The text lands at your cursor.",
+        };
+
+        var BARS = 30;
+        var bars = [];
+        var levels = [];
+        for (var i = 0; i < BARS; i++) {
+          bars.push(trace.appendChild(document.createElement("i")));
+          levels.push(0.12);
+        }
+
+        var state = "done";
+        var line = 0;
+        var timeouts = [];
+        var frame = 0;
+        var running = false;
+        var visible = false;
+
+        function fit(layer, animate) {
+          // Inside a hidden tab everything measures zero; that tab's stage is
+          // measured again by the ResizeObserver when it is shown.
+          if (!layer.scrollWidth) return;
+          if (!animate) capsule.style.transition = "none";
+          capsule.style.width = Math.ceil(layer.scrollWidth + 2) + "px";
+          if (!animate) {
+            capsule.getBoundingClientRect();
+            capsule.style.transition = "";
+          }
+        }
+
+        function show(next, animate) {
+          state = next;
+          Object.keys(layers).forEach(function (name) {
+            layers[name].classList.toggle("is-on", name === next);
+          });
+          fit(layers[next], animate);
+          caption.classList.add("is-swapping");
+          timeouts.push(
+            setTimeout(function () {
+              caption.textContent = captions[next];
+              caption.classList.remove("is-swapping");
+            }, 180),
+          );
+        }
+
+        // Speech, roughly: syllables that rise and fall, and short breaths between words.
+        function level(t) {
+          var syllable =
+            Math.abs(Math.sin(t * 7.3)) * (0.55 + 0.45 * Math.sin(t * 2.1 + 1));
+          var breath = Math.sin(t * 1.7) > 0.82 ? 0.15 : 1;
+          return Math.max(
+            0.12,
+            Math.min(
+              1,
+              (0.2 + 0.8 * syllable) * breath * (0.75 + 0.25 * Math.random()),
+            ),
+          );
+        }
+
+        function listen() {
+          var start = performance.now();
+          var lastShift = 0;
+          var lastTenth = -1;
+          function tick(now) {
+            var elapsed = now - start;
+            if (now - lastShift > 75) {
+              lastShift = now;
+              levels.shift();
+              levels.push(level(elapsed / 1000));
+              for (var b = 0; b < BARS; b++)
+                bars[b].style.transform =
+                  "scaleY(" + levels[b].toFixed(3) + ")";
+            }
+            var tenth = Math.floor(elapsed / 100);
+            if (tenth !== lastTenth) {
+              lastTenth = tenth;
+              timer.textContent = (tenth / 10).toFixed(1) + "s";
+            }
+            frame = requestAnimationFrame(tick);
+          }
+          frame = requestAnimationFrame(tick);
+        }
+
+        function cycle() {
+          timeouts = []; // the last cycle's timers have all fired by now
+          for (var b = 0; b < BARS; b++) {
+            levels[b] = 0.12;
+            bars[b].style.transform = "scaleY(0.12)";
+          }
+          timer.textContent = "0.0s";
+          show("listen", true);
+          listen();
+          timeouts.push(
+            setTimeout(function () {
+              cancelAnimationFrame(frame);
+              show("work", true);
+            }, 2600),
+          );
+          timeouts.push(
+            setTimeout(function () {
+              line = (line + 1) % lines.length;
+              doneText.textContent = lines[line];
+              show("done", true);
+            }, 3500),
+          );
+          timeouts.push(setTimeout(cycle, 7200));
+        }
+
+        function stop() {
+          running = false;
+          cancelAnimationFrame(frame);
+          timeouts.forEach(clearTimeout);
+          timeouts = [];
+        }
+
+        function update() {
+          var should = visible && !document.hidden && !reducedMotion.matches;
+          if (should === running) return;
+          if (!should) {
+            stop();
+            // Leave it on a finished sentence rather than frozen mid-word.
+            if (state !== "done") show("done", false);
+            return;
+          }
+          running = true;
+          timeouts.push(setTimeout(cycle, 900));
+        }
+
+        fit(layers.done, false);
+        if (window.IntersectionObserver) {
+          new IntersectionObserver(
+            function (entries) {
+              visible = entries[0].isIntersecting;
+              update();
+            },
+            { threshold: 0.4 },
+          ).observe(stage);
+        }
+        document.addEventListener("visibilitychange", update);
+        if (reducedMotion.addEventListener)
+          reducedMotion.addEventListener("change", update);
+        // The panel it sits in may be hidden at first; it is measured again when shown.
+        if (window.ResizeObserver)
+          new ResizeObserver(function () {
+            fit(layers[state], false);
+          }).observe(stage);
+      }
+
+      Array.prototype.forEach.call(
+        document.querySelectorAll(".stage"),
+        capsuleDemo,
+      );
+
+      function loadBuild(meta, ids) {
+        // The installers live on this repository's releases, which anyone can
+        // download. The manifest next to this page says which one is current; the
+        // app reads the same file for its daily update check.
+        var releaseEl = document.getElementById(ids.release);
+        var notesEl = document.getElementById(ids.notes);
+        var hashEl = document.getElementById(ids.hash);
+        var downloadEl = document.getElementById(ids.download);
+
+        function text(value) {
+          return document.createTextNode(value);
+        }
+
+        function span(content) {
+          var el = document.createElement("span");
+          el.appendChild(typeof content === "string" ? text(content) : content);
+          return el;
+        }
+
+        function ago(date) {
+          var mins = Math.floor((Date.now() - date.getTime()) / 60000);
+          if (mins < 1) return "just now";
+          if (mins < 60)
+            return mins + (mins === 1 ? " minute ago" : " minutes ago");
+          var hours = Math.floor(mins / 60);
+          if (hours < 24)
+            return hours + (hours === 1 ? " hour ago" : " hours ago");
+          var days = Math.floor(hours / 24);
+          if (days < 31) return days + (days === 1 ? " day ago" : " days ago");
+          return "on " + date.toLocaleDateString();
+        }
+
+        // "updated 2 hours ago", with the exact local date and time on hover.
+        function updated(iso) {
+          var date = new Date(iso);
+          if (isNaN(date.getTime())) return null;
+          var el = document.createElement("time");
+          el.dateTime = date.toISOString();
+          el.title = date.toLocaleString(undefined, {
+            dateStyle: "long",
+            timeStyle: "short",
+          });
+          el.appendChild(text("updated " + ago(date)));
+          return el;
+        }
+
+        function size(bytes) {
+          if (!bytes) return null;
+          var kb = bytes / 1024;
+          return kb < 1024
+            ? Math.round(kb) + " KB"
+            : (kb / 1024).toFixed(1) + " MB";
+        }
+
+        // Release notes are Markdown. This understands the part of it they use —
+        // headings, bullets, **bold**, `code` and https links — and builds nodes
+        // rather than HTML, so nothing in a note can run as markup.
+        function inline(into, source) {
+          var pattern =
+            /\*\*([^*]+)\*\*|`([^`]+)`|\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g;
+          var last = 0;
+          var match;
+          while ((match = pattern.exec(source))) {
+            if (match.index > last)
+              into.appendChild(text(source.slice(last, match.index)));
+            var el;
+            if (match[1]) {
+              el = document.createElement("strong");
+              el.textContent = match[1];
+            } else if (match[2]) {
+              el = document.createElement("code");
+              el.textContent = match[2];
+            } else {
+              el = document.createElement("a");
+              el.textContent = match[3];
+              el.href = match[4];
+            }
+            into.appendChild(el);
+            last = pattern.lastIndex;
+          }
+          if (last < source.length) into.appendChild(text(source.slice(last)));
+        }
+
+        function notes(into, body) {
+          into.textContent = "";
+          var lines = String(body || "")
+            .replace(/\r/g, "")
+            .trim()
+            .split("\n");
+          var paragraph = null;
+          var list = null;
+          var item = null;
+          var fence = null;
+          lines.forEach(function (raw) {
+            var line = raw.trim();
+            if (/^```/.test(line)) {
+              paragraph = list = item = null;
+              if (fence) fence = null;
+              else
+                fence = into
+                  .appendChild(document.createElement("pre"))
+                  .appendChild(document.createElement("code"));
+              return;
+            }
+            if (fence) {
+              fence.textContent += (fence.textContent ? "\n" : "") + raw;
+              return;
+            }
+            var heading = /^#{1,6}\s+(.*)$/.exec(line);
+            var bullet = /^[-*]\s+(.*)$/.exec(line);
+            if (!line) {
+              paragraph = list = item = null;
+              return;
+            }
+            if (heading) {
+              paragraph = list = item = null;
+              var h = document.createElement("h3");
+              inline(h, heading[1]);
+              into.appendChild(h);
+            } else if (bullet) {
+              paragraph = null;
+              if (!list) list = into.appendChild(document.createElement("ul"));
+              item = list.appendChild(document.createElement("li"));
+              inline(item, bullet[1]);
+            } else if (item) {
+              inline(item, " " + line);
+            } else {
+              if (paragraph) paragraph.appendChild(text(" "));
+              else paragraph = into.appendChild(document.createElement("p"));
+              inline(paragraph, line);
+            }
+          });
+          if (!into.firstChild)
+            into.appendChild(document.createElement("p")).textContent =
+              "No notes for this build.";
+          into.removeAttribute("aria-busy");
+        }
+
+        function render(build) {
+          releaseEl.textContent = "";
+          releaseEl.appendChild(span(build.version || "latest"));
+          var when = build.publishedAt && updated(build.publishedAt);
+          if (when) releaseEl.appendChild(span(when));
+          var pretty = size(build.bytes);
+          if (pretty) releaseEl.appendChild(span(pretty));
+          if (
+            /^https:\/\/github\.com\/mbn-code\/whisperly-download\//.test(
+              build.url || "",
+            )
+          )
+            downloadEl.href = build.url;
+          if (build.file) {
+            Array.prototype.forEach.call(
+              document.querySelectorAll("." + ids.prefix + "-file"),
+              function (el) {
+                el.textContent = build.file;
+              },
+            );
+          }
+          hashEl.textContent = build.sha256
+            ? ids.hashCase(String(build.sha256))
+            : "Not published for this build.";
+          notes(notesEl, build.notes);
+          [releaseEl, notesEl, hashEl].forEach(fadeIn);
+        }
+
+        function fail(message, detail) {
+          releaseEl.textContent = "";
+          releaseEl.appendChild(span(message));
+          hashEl.textContent = "—";
+          notes(notesEl, detail);
+          [releaseEl, notesEl, hashEl].forEach(fadeIn);
+        }
+
+        fetch(meta, { cache: "no-cache" })
+          .then(function (response) {
+            if (response.status === 404) return null;
+            if (!response.ok) throw new Error(response.status);
+            return response.json();
+          })
+          .then(function (build) {
+            if (build) return render(build);
+            fail(
+              "No build published yet",
+              "The button opens the releases page until a build is published here.",
+            );
+          })
+          .catch(function () {
+            // The button already points at the releases page, so a failed
+            // manifest request is no reason to take the download away.
+            fail(
+              "Build details unavailable",
+              "The button opens the releases page. Reload to try again for the version, notes and checksum.",
+            );
+          });
+      }
+
+      // Get-FileHash prints upper case and shasum lower case; each page shows the
+      // hash the way its own command will print it.
+      loadBuild("windows-latest.json", {
+        prefix: "win",
+        release: "win-release",
+        notes: "win-notes",
+        hash: "win-hash",
+        download: "win-download",
+        hashCase: function (hash) {
+          return hash.toUpperCase();
+        },
+      });
+      loadBuild("mac-latest.json", {
+        prefix: "mac",
+        release: "mac-release",
+        notes: "mac-notes",
+        hash: "mac-hash",
+        download: "mac-download",
+        hashCase: function (hash) {
+          return hash.toLowerCase();
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+name: Something is wrong
+description: Whisperly did not do what you expected.
+labels: [bug]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - Mac
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Whisperly version
+      description: Shown in Settings, under About.
+      placeholder: "0.6.2"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Your setup
+      description: Windows or macOS version, the speech model you use, your microphone, and your graphics card if it is relevant.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: |
+        On Windows, attach the newest file from `%LOCALAPPDATA%\Whisperly\logs`.
+        Read it first: it can contain file names and the text you dictated.

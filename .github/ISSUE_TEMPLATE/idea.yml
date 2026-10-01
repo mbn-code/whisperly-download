@@ -1,0 +1,21 @@
+name: An idea
+description: Something Whisperly could do, or do better.
+labels: [idea]
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - Mac
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you are trying to do, and where Whisperly gets in the way today.
+    validations:
+      required: true
