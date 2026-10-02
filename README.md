@@ -15,6 +15,9 @@ say what you mean, let go, and the words are typed wherever your cursor is.
 Speech is transcribed locally by [whisper.cpp](https://github.com/ggml-org/whisper.cpp).
 There is no account, no cloud service and no telemetry.
 
+Whisperly is in public preview. It works, but it is still being finished: the
+installers are not code-signed or notarized yet, and Pro is not on sale.
+
 This repository is where Whisperly is published: the website at
 **[mbn-code.github.io/whisperly-download](https://mbn-code.github.io/whisperly-download/)**
 and every build on the [releases page](https://github.com/mbn-code/whisperly-download/releases).
@@ -60,11 +63,14 @@ dictate in prompt mode is sent to that service, through your own sign-in.
 
 ## Pro
 
-Whisperly is free to use. Pro is a one-time $29 license that adds the two
-largest models, Medium and Large v3 Turbo, and the history picker. There is no
-subscription and no account: the key is checked on your computer. Write to
+Whisperly is free to use. In the current Windows build, a Pro license unlocks
+the two largest models, Medium and Large v3 Turbo, and the history picker.
+Pro is not on sale yet: while Whisperly is in preview, a license is free on
+request. What Pro includes, and its price, will be settled before the preview
+ends. Write to
 [malthe@mbn-code.dk](mailto:malthe@mbn-code.dk?subject=Whisperly%20Pro) for a
-license, then paste it into Settings, under About. More on the
+license, then paste it into Settings, under About. The key is checked on your
+computer; there is no account. More on the
 [Pro page](https://mbn-code.github.io/whisperly-download/#pro).
 
 ## Verify a download
