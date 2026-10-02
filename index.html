@@ -536,6 +536,70 @@
       .shot.is-loading {
         opacity: 0;
       }
+
+      /* The launch film. A plain <video> with controls works on its own; the
+         script adds a silent preview loop on top only when motion is welcome. */
+      .film {
+        margin: 28px 0 32px;
+      }
+      .film-frame {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        /* The film's own canvas colour, so the frame never flashes white. */
+        background: #0f1115;
+      }
+      .film-frame video {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .film-loop {
+        position: absolute;
+        inset: 0;
+        object-fit: cover;
+      }
+      .film-play {
+        position: absolute;
+        left: 50%;
+        bottom: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 16px 9px 13px;
+        border: 0;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #16181d;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        transform: translateX(-50%);
+      }
+      .film-play:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .film-play svg {
+        flex: none;
+      }
+      .film figcaption {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      @media (max-width: 480px) {
+        .film-play {
+          bottom: 10px;
+          padding: 7px 13px 7px 11px;
+          font-size: 14px;
+        }
+      }
       .small {
         color: var(--muted);
         font-size: 14px;
@@ -723,6 +787,33 @@
         <div class="release" id="win-release" aria-live="polite">
           <span>Checking for the latest build…</span>
         </div>
+
+        <figure class="film">
+          <div class="film-frame">
+            <video
+              class="film-main"
+              controls
+              playsinline
+              preload="none"
+              poster="assets/film/poster.jpg"
+              width="1920"
+              height="1080"
+            >
+              <source src="assets/film/whisperly-launch.mp4" type="video/mp4" />
+              <track
+                kind="captions"
+                src="assets/film/whisperly-launch.vtt"
+                srclang="en"
+                label="English"
+                default
+              />
+            </video>
+          </div>
+          <figcaption>
+            Whisperly in a minute and a half, narrated, with captions. Staged
+            parts are labelled as illustrative in the film.
+          </figcaption>
+        </figure>
 
         <h2>Install</h2>
         <ol>
@@ -996,6 +1087,33 @@
         <div class="release" id="mac-release" aria-live="polite">
           <span>Checking for the latest build…</span>
         </div>
+
+        <figure class="film">
+          <div class="film-frame">
+            <video
+              class="film-main"
+              controls
+              playsinline
+              preload="none"
+              poster="assets/film/poster.jpg"
+              width="1920"
+              height="1080"
+            >
+              <source src="assets/film/whisperly-launch.mp4" type="video/mp4" />
+              <track
+                kind="captions"
+                src="assets/film/whisperly-launch.vtt"
+                srclang="en"
+                label="English"
+                default
+              />
+            </video>
+          </div>
+          <figcaption>
+            Whisperly in a minute and a half, narrated, with captions. Staged
+            parts are labelled as illustrative in the film.
+          </figcaption>
+        </figure>
 
         <h2>Install</h2>
         <ol>
@@ -1733,6 +1851,87 @@
             );
           });
       }
+
+      // The launch film. Without this, each panel shows a plain <video> with its
+      // poster and controls. With it, a silent preview loop plays over the poster
+      // while the film is on screen, unless the visitor asked for reduced motion
+      // or for data saving; the full film, with sound and captions, starts only
+      // when they choose to play it.
+      (function () {
+        var saveData = navigator.connection && navigator.connection.saveData;
+        if (
+          reducedMotion.matches ||
+          saveData ||
+          !("IntersectionObserver" in window)
+        )
+          return;
+        var previews = [];
+        document.querySelectorAll(".film-frame").forEach(function (frame) {
+          var main = frame.querySelector(".film-main");
+          var loop = document.createElement("video");
+          loop.className = "film-loop";
+          loop.muted = true;
+          loop.loop = true;
+          loop.playsInline = true;
+          loop.preload = "none";
+          loop.poster = main.getAttribute("poster");
+          loop.setAttribute("aria-hidden", "true");
+          loop.src = "assets/film/loop.mp4";
+          var play = document.createElement("button");
+          play.type = "button";
+          play.className = "film-play";
+          play.setAttribute(
+            "aria-label",
+            "Play the film, one minute 32 seconds",
+          );
+          play.innerHTML =
+            '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">' +
+            '<path d="M3 1.8v10.4L12 7z" fill="currentColor"/></svg>' +
+            "Play the film · 1:32";
+          // The real player stays in place, hidden, so the frame keeps its size
+          // and keyboard focus cannot land on controls nobody can see.
+          main.style.visibility = "hidden";
+          frame.appendChild(loop);
+          frame.appendChild(play);
+
+          var seen = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  var started = loop.play();
+                  if (started && started.catch) started.catch(function () {});
+                } else {
+                  loop.pause();
+                }
+              });
+            },
+            { threshold: 0.5 },
+          );
+          seen.observe(frame);
+
+          function stop() {
+            seen.disconnect();
+            loop.pause();
+            loop.remove();
+            play.remove();
+            main.style.visibility = "";
+          }
+          play.addEventListener("click", function () {
+            stop();
+            main.play();
+            main.focus();
+          });
+          previews.push(stop);
+        });
+        // Turning reduced motion on mid-visit stops the previews at once.
+        if (reducedMotion.addEventListener)
+          reducedMotion.addEventListener("change", function (event) {
+            if (event.matches)
+              previews.forEach(function (stop) {
+                stop();
+              });
+          });
+      })();
 
       // Get-FileHash prints upper case and shasum lower case; each page shows the
       // hash the way its own command will print it.
