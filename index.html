@@ -6,7 +6,7 @@
     <title>Whisperly</title>
     <meta
       name="description"
-      content="Hold a key, speak, let go: Whisperly types what you said at your cursor. Local speech-to-text for Windows and Mac, built on whisper.cpp. No account, no cloud."
+      content="Hold a key, speak, let go: Whisperly types what you said at your cursor. Local speech-to-text for Windows and Mac, built on whisper.cpp. No account, and your recordings never leave your computer."
     />
     <meta name="color-scheme" content="light dark" />
     <meta
@@ -233,6 +233,16 @@
       .lede {
         color: var(--muted);
         margin-bottom: 32px;
+      }
+      .lede:has(+ .preview) {
+        margin-bottom: 16px;
+      }
+      .preview {
+        margin: 0 0 32px;
+        padding: 2px 0 2px 14px;
+        border-left: 2px solid var(--accent);
+        color: var(--muted);
+        font-size: 14px;
       }
       a {
         color: var(--accent);
@@ -716,7 +726,11 @@
         <p class="lede">
           Hold a key, say what you mean, let go: the words appear wherever your
           cursor is. Speech becomes text on your own PC, through whisper.cpp. No
-          account, no cloud, no telemetry.
+          account and no telemetry, and your recordings never leave your PC.
+        </p>
+        <p class="preview">
+          Public preview. Whisperly works, but it is still being finished: the
+          installer is not code-signed yet, and Pro is not on sale.
         </p>
 
         <figure
@@ -1023,6 +1037,11 @@
           the text lands at your cursor. Transcription runs on your Mac through
           whisper.cpp.
         </p>
+        <p class="preview">
+          Public preview. Whisperly works, but it is still being finished: the
+          app is not notarized yet, and it needs Homebrew's whisper-cpp (step 1
+          under Install).
+        </p>
 
         <figure class="stage" data-key="Right ⌘" data-device="Mac">
           <div class="capsule" aria-hidden="true">
@@ -1233,11 +1252,12 @@
         />
         <h1>Whisperly Pro</h1>
         <p class="lede">
-          Whisperly is free to use. Pro is a one-time $29 license for the
-          largest models and the history picker. No subscription, no account.
+          Whisperly is free to use. Pro is not on sale yet: while Whisperly is
+          in preview, a Pro license is free on request. What Pro includes, and
+          its price, will be settled before the preview ends.
         </p>
 
-        <h2>What Pro adds</h2>
+        <h2>What Pro unlocks in the current builds</h2>
         <dl>
           <dt>Medium</dt>
           <dd>The most accurate English-only model, about 1.5 GB.</dd>
@@ -1261,8 +1281,8 @@
         <div class="tool-card">
           <h3>Get a license</h3>
           <p>
-            Licenses are issued by hand for now. Write and you get a key back by
-            email.
+            During the preview, licenses are free and issued by hand. Write and
+            you get a key back by email.
           </p>
           <a
             class="download"
