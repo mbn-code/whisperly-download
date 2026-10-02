@@ -54,7 +54,8 @@ build and its checksum.
 Your audio never leaves your computer. Whisperly goes online only to:
 
 - download the speech models you choose, from Hugging Face;
-- check once a day whether a newer version is out (on Windows, this can be turned off in Settings, under About);
+- on Windows, check once a day whether a newer version is out (this can be turned off in Settings, under About);
+- on a Mac, ask GitHub for a newer version each time the app starts and when you choose Check for Updates… in the menu bar. Mac 1.0.1 cannot see new releases this way and never reports one, so watch the [releases page](https://github.com/mbn-code/whisperly-download/releases) for new Mac builds;
 - on Windows, download a processor-only engine from GitHub if you choose to install one.
 
 Windows also has an optional prompt mode, shaped by a local model through
