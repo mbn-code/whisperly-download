@@ -26,9 +26,10 @@ acknowledgement within a few days.
   granted by you.
 - It verifies every downloaded speech model against a known SHA-256 and
   rejects a mismatch.
-- Its update check fetches a version number once a day and sends nothing
-  identifying beyond the user agent. On Windows it refuses redirects and
-  ignores any download link that is not on the address it expects.
+- Its update check asks for a version number, once a day on Windows and, on a
+  Mac, at each start and from Check for Updates… in the menu bar. It sends
+  nothing identifying beyond the user agent. On Windows it refuses redirects
+  and ignores any download link that is not on the address it expects.
 
 Out of scope: attacks that already need code running on your computer, bugs in
 whisper.cpp itself (please report those upstream), and text that merely looks

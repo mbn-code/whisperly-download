@@ -53,6 +53,11 @@ it takes the highest plain `vX.Y.Z` tag that is not a pre-release, and ignores
 `windows-` tags. It reads the newest 20 releases, so publish a Mac release
 before 20 Windows releases pile up on top of the last one.
 
+Mac 1.0.1, the build published now, does not do this: it asks the private
+source repository instead, which an anonymous request cannot see, so it never
+reports an update. Until a Mac build that reads this repository ships, Mac
+users learn about new versions only from the website and the releases page.
+
 The Windows app refuses a manifest over 16 KB, a redirect, and a download URL
 anywhere but this repository or its site. The script enforces the size; the
 rest means two things:

@@ -1187,8 +1187,13 @@
         <p>
           Your audio and text never leave your Mac, and there is no account or
           telemetry. Whisperly goes online only to download the models you
-          choose from Hugging Face, and to check GitHub once a day for a newer
-          version.
+          choose from Hugging Face, and to ask GitHub for a newer version each
+          time it starts and when you choose Check for Updates… in the menu
+          bar. In 1.0.1 that check cannot see new releases, so it never reports
+          one: look for new Mac builds on this page and the
+          <a href="https://github.com/mbn-code/whisperly-download/releases"
+            >releases page</a
+          >.
         </p>
 
         <h2>Requirements</h2>
@@ -1678,7 +1683,7 @@
       function loadBuild(meta, ids) {
         // The installers live on this repository's releases, which anyone can
         // download. The manifest next to this page says which one is current; the
-        // app reads the same file for its daily update check.
+        // Windows app reads its file for its daily update check.
         var releaseEl = document.getElementById(ids.release);
         var notesEl = document.getElementById(ids.notes);
         var hashEl = document.getElementById(ids.hash);
