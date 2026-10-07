@@ -905,8 +905,8 @@
           <dt>Models</dt>
           <dd>
             Seven whisper.cpp models, from Tiny (75 MB) to Large v3 Turbo (1.6
-            GB). Each downloads from Hugging Face and is checked against its
-            SHA-256 before use.
+            GB), and an experimental eighth trained for Danish. Each is checked
+            against its SHA-256 before use.
           </dd>
           <dt>Speed</dt>
           <dd>
@@ -916,7 +916,8 @@
           <dt>Languages</dt>
           <dd>
             100 languages and auto-detect with a multilingual model. Danish is
-            handled end to end: punctuation by voice, decimal commas and names.
+            handled end to end: punctuation by voice, decimal commas and names,
+            on Large v3 Turbo — the model recommended for it, and free.
           </dd>
           <dt>Dictionary</dt>
           <dd>
@@ -1266,11 +1267,6 @@
         <dl>
           <dt>Medium</dt>
           <dd>The most accurate English-only model, about 1.5 GB.</dd>
-          <dt>Large v3 Turbo</dt>
-          <dd>
-            The most accurate model overall, about 1.6 GB, and the best choice
-            for any language other than English.
-          </dd>
           <dt>History picker</dt>
           <dd>
             Ctrl+Alt+Shift+V opens a search over everything you have dictated;
@@ -1278,8 +1274,9 @@
           </dd>
         </dl>
         <p class="small" style="margin-top: 20px">
-          Everything else is free: the five other models, the dictionary, voice
-          commands, prompt mode, file transcription and history. The current Mac
+          Everything else is free: the seven other models — Large v3 Turbo
+          among them, from Windows 0.6.3 — the dictionary, voice commands,
+          prompt mode, file transcription and history. The current Mac
           build, 1.0.1, predates Pro, so everything in it is free.
         </p>
 
